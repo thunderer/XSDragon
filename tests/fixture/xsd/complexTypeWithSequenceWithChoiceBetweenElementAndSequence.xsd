@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+    xmlns="http://example.org/schema"
+    xmlns:thunder="http://example.org/schemax"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://example.org/schema"
+    elementFormDefault="qualified">
+
+<!--
+This schema should result in 6 classes:
+  - Element SeqWithChoice
+  - ComplexType ComplexTypeWithSequenceWithChoiceAndElement
+  - PseudoChoice SeqWithChoice_Choice
+  - PseudoChoice ComplexTypeWithSequenceWithChoiceAndElement_Choice
+  - SimpleType StringType
+  - SimpleType IntType
+
+PseudoSequence classes are not generated as PseudoChoice is able to construct itself from sequence named constructor.
+-->
+
+    <xsd:simpleType name="StringType">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="5" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="IntType">
+        <xsd:restriction base="xsd:int">
+            <xsd:minInclusive value="5" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:element name="seqWithChoice" type="complexTypeWithSequenceWithChoiceAndElement" />
+    <xsd:complexType name="complexTypeWithSequenceWithChoiceAndElement">
+        <xsd:sequence>
+            <xsd:choice minOccurs="1" maxOccurs="1">
+                <xsd:element name="elementWithinChoice" type="IntType" />
+                <xsd:sequence>
+                    <xsd:element name="seqEl0" type="StringType" />
+                    <xsd:element name="seqEl1" type="IntType" minOccurs="1" maxOccurs="1"/>
+                    <xsd:element name="seqEl2" type="StringType" minOccurs="1" maxOccurs="1"/>
+                </xsd:sequence>
+            </xsd:choice>
+            <xsd:element name="elementWithinSequence" type="StringType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+</xsd:schema>

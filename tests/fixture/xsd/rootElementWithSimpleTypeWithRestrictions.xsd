@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+    xmlns="http://example.org/schema/simpleTypes"
+    targetNamespace="http://example.org/schema/simpleTypes"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified">
+
+    <xsd:element name="length5" type="StringWithLength5" />
+    <xsd:simpleType name="StringWithLength5">
+        <xsd:restriction base="xsd:string">
+            <xsd:length value="5" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+</xsd:schema>

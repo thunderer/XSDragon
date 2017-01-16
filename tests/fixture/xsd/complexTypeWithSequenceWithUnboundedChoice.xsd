@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://example.org/schema"
+            xmlns:thunder="http://example.org/schemax"
+            targetNamespace="http://example.org/schema"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            elementFormDefault="qualified">
+
+    <xsd:simpleType name="StringType">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="5" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="IntType">
+        <xsd:restriction base="xsd:int">
+            <xsd:minInclusive value="5" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:element name="seqWithUnboundedChoice" type="complexTypeWithSequenceWithUnboundedChoice" />
+    <xsd:complexType name="complexTypeWithSequenceWithUnboundedChoice">
+        <xsd:sequence>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="seqEl0" type="StringType" />
+                <xsd:element name="seqEl1" type="IntType" />
+            </xsd:choice>
+        </xsd:sequence>
+        <xsd:attribute name="version" type="xsd:decimal" use="required" />
+    </xsd:complexType>
+
+</xsd:schema>

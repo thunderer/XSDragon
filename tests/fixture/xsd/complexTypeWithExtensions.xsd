@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+        xmlns="http://example.org/schema"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="http://example.org/schema"
+        elementFormDefault="qualified">
+
+<!--
+Here are two classes:
+  - Root for Element type,
+  - SimpleTypeExtension for ComplexType,
+but since ComplexType contains Element with SimpleContent, things get a little weird.
+
+SimpleContent extends xsd:string so the Element's type is xsd:string, but Extension
+also defines an Attribute that needs to be included in the generated code.
+
+This means that Element with inline SimpleContent or ComplexContent must have
+external class generated and set as a property type in parent class.
+-->
+
+    <xsd:element name="root" type="SimpleTypeExtension" />
+
+    <xsd:complexType name="SimpleTypeExtension">
+        <xsd:annotation>
+            <xsd:documentation>Provides additional detail about a money movement.</xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="item" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="xsd:string">
+                            <xsd:attribute name="type" use="required">
+                                <xsd:simpleType>
+                                    <xsd:restriction base="xsd:string">
+                                        <xsd:enumeration value="first" />
+                                        <xsd:enumeration value="second"/>
+                                    </xsd:restriction>
+                                </xsd:simpleType>
+                            </xsd:attribute>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+<!--
+ComplexContent with Extension should be a little easier because it just needs
+to pull whatever referenced ComplexType has and merge it with its own contents.
+
+Let's see how it goes.
+-->
+
+    <xsd:element name="random" type="ComplexTypeExtension" />
+
+    <xsd:complexType name="ComplexTypeExtension">
+        <xsd:complexContent>
+            <xsd:extension base="SimpleTypeExtension">
+                <xsd:sequence>
+                    <xsd:element name="value" type="xsd:string" minOccurs="1" maxOccurs="1" />
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+</xsd:schema>

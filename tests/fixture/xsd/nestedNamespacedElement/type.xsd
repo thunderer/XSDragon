@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://example.org/schema/type" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:simpleType name="StringType">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="5" />
+        </xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>

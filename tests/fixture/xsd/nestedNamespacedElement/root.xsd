@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://example.org/schema"
+            xmlns:firstNs="http://example.org/schema/firstNs"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://example.org/schema"
+            elementFormDefault="qualified">
+
+    <xsd:import namespace="http://example.org/schema/firstNs" schemaLocation="first.xsd" />
+
+    <xsd:element name="root" type="RootType" />
+
+    <xsd:complexType name="RootType">
+        <xsd:sequence>
+            <xsd:element name="first" type="firstNs:FirstType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>

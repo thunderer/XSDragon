@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://example.org/schema" targetNamespace="http://example.org/schema" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <xsd:simpleType name="StringType">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="5" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="IntType">
+        <xsd:restriction base="xsd:int">
+            <xsd:minInclusive value="5" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:element name="root" type="SequenceWithUnboundedElement" />
+
+    <xsd:complexType name="SequenceWithUnboundedElement">
+        <xsd:sequence>
+            <xsd:element name="seqWithEl" type="SequenceWithElement" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="mandatory" type="xsd:boolean" use="required" />
+    </xsd:complexType>
+
+    <xsd:complexType name="SequenceWithElement">
+        <xsd:sequence>
+            <xsd:element name="seqWithSeq" type="SequenceWithSequence" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="seqWithElAttr0" type="xsd:string" use="required" />
+        <xsd:attribute name="seqWithElAttr1" type="xsd:string" use="required" />
+    </xsd:complexType>
+
+    <xsd:complexType name="SequenceWithSequence">
+        <xsd:sequence>
+            <xsd:sequence>
+                <xsd:element name="seqWithSeqEl0" type="StringType" minOccurs="1" maxOccurs="1"/>
+                <xsd:element name="seqWithSeqEl1" type="IntType" minOccurs="1" maxOccurs="1"/>
+                <xsd:element name="seqWithSeqEl2" type="StringType" minOccurs="0" maxOccurs="1" />
+            </xsd:sequence>
+        </xsd:sequence>
+    </xsd:complexType>
+
+</xsd:schema>

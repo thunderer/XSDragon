@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://example.org/schema/secondNs" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:thirdNs="http://example.org/schema/thirdNs">
+    <xsd:import namespace="http://example.org/schema/thirdNs" schemaLocation="third.xsd" />
+
+    <xsd:complexType name="SecondType">
+        <xsd:sequence>
+            <xsd:element name="third" type="thirdNs:ThirdType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>
