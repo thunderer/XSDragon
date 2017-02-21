@@ -120,32 +120,32 @@ final class Restrictions
         return $this->patterns;
     }
 
-    public function getLength(): ?int
+    public function getLength()
     {
         return $this->length;
     }
 
-    public function getMinLength(): ?int
+    public function getMinLength()
     {
         return $this->minLength;
     }
 
-    public function getMaxLength(): ?int
+    public function getMaxLength()
     {
         return $this->maxLength;
     }
 
-    public function getMinInclusive(): ?int
+    public function getMinInclusive()
     {
         return $this->minInclusive;
     }
 
-    public function getMaxInclusive(): ?int
+    public function getMaxInclusive()
     {
         return $this->maxInclusive;
     }
 
-    public function getFractionDigits(): ?int
+    public function getFractionDigits()
     {
         return $this->fractionDigits;
     }

@@ -38,7 +38,7 @@ final class ClassDomXmlSerializer implements XmlSerializerInterface
         return $doc->saveXML();
     }
 
-    private function doSerialize($type, XmlObjectInterface $object, Schema $schema, \DOMDocument $doc, \DOMElement $parent = null, int $level): void
+    private function doSerialize($type, XmlObjectInterface $object, Schema $schema, \DOMDocument $doc, \DOMElement $parent = null, int $level)
     {
         if($type instanceof Element) {
             $this->log('RElement '.get_class($object), $level);
@@ -64,7 +64,7 @@ final class ClassDomXmlSerializer implements XmlSerializerInterface
         return XsdUtility::xmlPrefix($this->schemas, $uri, $schema);
     }
 
-    private function complexType(ComplexType $xsdType, XmlObjectInterface $object, Schema $schema, string $ns, \DOMDocument $doc, \DOMElement $parent = null, int $level): void
+    private function complexType(ComplexType $xsdType, XmlObjectInterface $object, Schema $schema, string $ns, \DOMDocument $doc, \DOMElement $parent = null, int $level)
     {
         foreach($xsdType->getAttributes() as $attribute) {
             $value = $object->{'get'.ucfirst($attribute->getName())}();
@@ -93,7 +93,7 @@ final class ClassDomXmlSerializer implements XmlSerializerInterface
         }
     }
 
-    private function all(All $all, $object, Schema $schema, string $ns, \DOMDocument $doc, \DOMElement $parent = null, int $level): void
+    private function all(All $all, $object, Schema $schema, string $ns, \DOMDocument $doc, \DOMElement $parent = null, int $level)
     {
         $this->log('All', $level);
         foreach($all->getElements() as $element) {
@@ -105,7 +105,7 @@ final class ClassDomXmlSerializer implements XmlSerializerInterface
         }
     }
 
-    private function logType(string $type, $value, int $level): void
+    private function logType(string $type, $value, int $level)
     {
         $this->log($type.' '.(is_object($value) ? get_class($value) : gettype($value)), $level);
     }
@@ -176,7 +176,7 @@ final class ClassDomXmlSerializer implements XmlSerializerInterface
         }
     }
 
-    private function choice(Choice $choice, $object, Schema $schema, string $ns, \DOMDocument $doc, \DOMElement $parent = null, int $level): void
+    private function choice(Choice $choice, $object, Schema $schema, string $ns, \DOMDocument $doc, \DOMElement $parent = null, int $level)
     {
         $this->log('Choice', $level);
         foreach($choice->getElements() as $type) {
@@ -192,7 +192,7 @@ final class ClassDomXmlSerializer implements XmlSerializerInterface
         }
     }
 
-    private function sequence(Sequence $sequence, $object, Schema $schema, string $ns, \DOMDocument $doc, \DOMElement $parent = null, int $level): void
+    private function sequence(Sequence $sequence, $object, Schema $schema, string $ns, \DOMDocument $doc, \DOMElement $parent = null, int $level)
     {
         $this->log('Sequence ', $level);
         foreach($sequence->getElements() as $element) {
@@ -228,7 +228,7 @@ final class ClassDomXmlSerializer implements XmlSerializerInterface
         return [$schema, $schema->findTypeByName($name)];
     }
 
-    private function log(string $message, int $level): void
+    private function log(string $message, int $level)
     {
         //  echo str_pad('', 2 * $level, ' ').$message."\n";
     }

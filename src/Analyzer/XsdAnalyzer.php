@@ -471,7 +471,7 @@ final class XsdAnalyzer
         return $handlers[get_class($value)]($value);
     }
 
-    private function log(int $level, string ...$message): void
+    private function log(int $level, string ...$message)
     {
         XsdUtility::log($this->logger, $level, ...$message);
     }

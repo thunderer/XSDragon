@@ -171,7 +171,7 @@ EOF;
         throw new \RuntimeException('Invalid occurs object!');
     }
 
-    public static function log(LoggerInterface $logger, int $level, string ...$message): void
+    public static function log(LoggerInterface $logger, int $level, string ...$message)
     {
         $colors = [29, 33, 34, 32, 35, 36, 37];
         if(count($message) > count($colors)) {

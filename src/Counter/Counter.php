@@ -26,7 +26,7 @@ final class Counter
     {
     }
 
-    public function start(): void
+    public function start()
     {
         if(null !== $this->startedAt) {
             throw new \LogicException('Counter is not reusable!');
@@ -35,7 +35,7 @@ final class Counter
         $this->startedAt = microtime(true);
     }
 
-    public function stop(): void
+    public function stop()
     {
         if(null !== $this->finishedAt) {
             throw new \LogicException('Counter is not reusable!');
@@ -44,16 +44,16 @@ final class Counter
         $this->finishedAt = microtime(true);
     }
 
-    public function tickSchema(): void { $this->schemasCount++; }
-    public function tickElement(): void { $this->elementsCount++; }
-    public function tickSimpleType(): void { $this->simpleTypesCount++; }
-    public function tickComplexType(): void { $this->complexTypesCount++; }
-    public function tickAttribute(): void { $this->attributesCount++; }
-    public function tickSequence(): void { $this->sequencesCount++; }
-    public function tickChoice(): void { $this->choicesCount++; }
-    public function tickAll(): void { $this->allsCount++; }
-    public function tickPseudoTypes(): void { $this->pseudoTypesCount++; }
-    public function tickClass(): void { $this->classesCount++; }
+    public function tickSchema() { $this->schemasCount++; }
+    public function tickElement() { $this->elementsCount++; }
+    public function tickSimpleType() { $this->simpleTypesCount++; }
+    public function tickComplexType() { $this->complexTypesCount++; }
+    public function tickAttribute() { $this->attributesCount++; }
+    public function tickSequence() { $this->sequencesCount++; }
+    public function tickChoice() { $this->choicesCount++; }
+    public function tickAll() { $this->allsCount++; }
+    public function tickPseudoTypes() { $this->pseudoTypesCount++; }
+    public function tickClass() { $this->classesCount++; }
 
     public function getStartedAt(): float { return $this->startedAt; }
     public function getFinishedAt(): float { return $this->finishedAt; }

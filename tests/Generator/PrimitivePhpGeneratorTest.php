@@ -100,7 +100,7 @@ final class PrimitivePhpGeneratorTest extends TestCase
 
         $this->assertContains('dir/PhpNs/Ns1P/SeqWithChoice.php', $files[1]);
         $this->assertContains('final class SeqWithChoice', $files[1]);
-        $this->assertContains('public function __construct(ComplexTypeWithSequenceWithChoiceAndElement_Choice $complexTypeWithSequenceWithChoiceAndElement_Choice, ?string $elementWithinSequence)', $files[1]);
+        $this->assertContains('public function __construct(ComplexTypeWithSequenceWithChoiceAndElement_Choice $complexTypeWithSequenceWithChoiceAndElement_Choice, string $elementWithinSequence = null)', $files[1]);
 
         $this->assertContains('dir/PhpNs/Ns1P/ComplexTypeWithSequenceWithChoiceAndElement_Choice.php', $files[2]);
         $this->assertContains('final class ComplexTypeWithSequenceWithChoiceAndElement_Choice', $files[2]);
@@ -109,7 +109,7 @@ final class PrimitivePhpGeneratorTest extends TestCase
 
         $this->assertContains('dir/PhpNs/Ns1P/ComplexTypeWithSequenceWithChoiceAndElement.php', $files[3]);
         $this->assertContains('final class ComplexTypeWithSequenceWithChoiceAndElement', $files[3]);
-        $this->assertContains('public function __construct(ComplexTypeWithSequenceWithChoiceAndElement_Choice $complexTypeWithSequenceWithChoiceAndElement_Choice, ?string $elementWithinSequence)', $files[3]);
+        $this->assertContains('public function __construct(ComplexTypeWithSequenceWithChoiceAndElement_Choice $complexTypeWithSequenceWithChoiceAndElement_Choice, string $elementWithinSequence = null)', $files[3]);
 
         $this->assertContains('dir/PhpNs/Ns1P/StringType.php', $files[4]);
         $this->assertContains('final class StringType', $files[4]);
@@ -213,8 +213,8 @@ final class PrimitivePhpGeneratorTest extends TestCase
         $this->assertContains('private function __construct', $files[1]);
         $this->assertContains('public static function createFromChoEl0(int $choEl0): self', $files[1]);
         $this->assertContains('public static function createFromChoEl1(string $choEl1): self', $files[1]);
-        $this->assertContains('public function getChoEl0(): ?int {', $files[1]);
-        $this->assertContains('public function getChoEl1(): ?string {', $files[1]);
+        $this->assertContains('public function getChoEl0() {', $files[1]);
+        $this->assertContains('public function getChoEl1() {', $files[1]);
 
         $this->assertContains('dir/PhpNs/Ns3P/RootElement.php', $files[2]);
         $this->assertContains('final class RootElement', $files[2]);
@@ -275,12 +275,12 @@ final class PrimitivePhpGeneratorTest extends TestCase
             $files[2] => [
                 'dir/PhpNs/Ns4P/SequenceWithElement.php',
                 'final class SequenceWithElement',
-                'public function __construct(string $seqWithElAttr0, string $seqWithElAttr1, ?SequenceWithSequence $seqWithSeq)',
+                'public function __construct(string $seqWithElAttr0, string $seqWithElAttr1, SequenceWithSequence $seqWithSeq = null)',
             ],
             $files[3] => [
                 'dir/PhpNs/Ns4P/SequenceWithSequence_Sequence.php',
                 'final class SequenceWithSequence_Sequence',
-                'public function __construct(string $seqWithSeqEl0, int $seqWithSeqEl1, ?string $seqWithSeqEl2)',
+                'public function __construct(string $seqWithSeqEl0, int $seqWithSeqEl1, string $seqWithSeqEl2 = null)',
             ],
             $files[4] => [
                 'dir/PhpNs/Ns4P/SequenceWithSequence.php',

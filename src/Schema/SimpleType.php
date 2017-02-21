@@ -15,7 +15,7 @@ final class SimpleType
     /** @var null|Union|Restrictions */
     private $type;
 
-    public function __construct(string $namespaceUri, ?string $name, ?string $documentation, $type)
+    public function __construct(string $namespaceUri, string $name = null, string $documentation = null, $type)
     {
         if(false === (null === $type || (is_object($type) && in_array(get_class($type), [Restrictions::class, Union::class], true)))) {
             throw new \InvalidArgumentException(sprintf('SimpleType type can be either null, Restrictions or Union, `%s` given!', XsdUtility::describe($type)));
@@ -32,12 +32,12 @@ final class SimpleType
         return $this->namespaceUri;
     }
 
-    public function getName(): ?string
+    public function getName()
     {
         return $this->name;
     }
 
-    public function getDocumentation(): ?string
+    public function getDocumentation()
     {
         return $this->documentation;
     }

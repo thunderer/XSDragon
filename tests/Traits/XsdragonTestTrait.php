@@ -25,7 +25,7 @@ trait XsdragonTestTrait
         }
     }
 
-    private function validateXmlSchema(string $xml, string $xsd): void
+    private function validateXmlSchema(string $xml, string $xsd)
     {
         $use = libxml_use_internal_errors(true);
         $dom = new \DOMDocument();

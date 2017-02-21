@@ -209,8 +209,8 @@ final class ClassPhpGeneratorTest extends TestCase
         $this->assertContains('private function __construct', $files[3]);
         $this->assertContains('public static function createFromChoEl0(IntType $choEl0): self', $files[3]);
         $this->assertContains('public static function createFromChoEl1(StringType $choEl1): self', $files[3]);
-        $this->assertContains('public function getChoEl0(): ?IntType {', $files[3]);
-        $this->assertContains('public function getChoEl1(): ?StringType {', $files[3]);
+        $this->assertContains('public function getChoEl0() {', $files[3]);
+        $this->assertContains('public function getChoEl1() {', $files[3]);
 
         $this->assertContains('dir/PhpNs/Ns3/RootElement.php', $files[4]);
         $this->assertContains('final class RootElement', $files[4]);

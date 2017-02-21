@@ -68,12 +68,12 @@ final class Schema
         return isset($this->elements[$name]);
     }
 
-    public function addImport(string $import): void
+    public function addImport(string $import)
     {
         $this->imports[] = $import;
     }
 
-    public function addSimpleType(SimpleType $type): void
+    public function addSimpleType(SimpleType $type)
     {
         if($this->hasSimpleTypeWithName($type->getName())) {
             throw new \RuntimeException(sprintf('Duplicate SimpleType identifier %s!', $type->getName()));
@@ -82,7 +82,7 @@ final class Schema
         $this->simpleTypes[$type->getName()] = $type;
     }
 
-    public function addComplexType(ComplexType $type): void
+    public function addComplexType(ComplexType $type)
     {
         if($this->hasComplexTypeWithName($type->getName())) {
             throw new \RuntimeException(sprintf('Duplicate ComplexType identifier %s!', $type->getName()));
@@ -91,7 +91,7 @@ final class Schema
         $this->complexTypes[$type->getName()] = $type;
     }
 
-    public function addElement(Element $type): void
+    public function addElement(Element $type)
     {
         if($this->hasElementWithName($type->getName())) {
             throw new \RuntimeException(sprintf('Duplicate Element identifier %s!', $type->getName()));

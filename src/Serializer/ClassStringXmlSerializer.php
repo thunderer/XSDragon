@@ -211,12 +211,12 @@ final class ClassStringXmlSerializer implements XmlSerializerInterface
         return $schema->findTypeByName($name);
     }
 
-    private function logType(string $type, $value, int $level): void
+    private function logType(string $type, $value, int $level)
     {
         $this->log($type.' '.(is_object($value) ? get_class($value) : gettype($value)), $level);
     }
 
-    private function log(string $message, int $level): void
+    private function log(string $message, int $level)
     {
         // echo str_pad('', 2 * $level, ' ').$message."\n";
     }

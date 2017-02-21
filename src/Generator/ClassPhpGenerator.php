@@ -30,7 +30,7 @@ final class ClassPhpGenerator implements GeneratorInterface
         $this->logger = $logger;
     }
 
-    public function generate(SchemaContainer $schemas): void
+    public function generate(SchemaContainer $schemas)
     {
         $this->schemas = $schemas;
 
@@ -50,7 +50,7 @@ final class ClassPhpGenerator implements GeneratorInterface
         $this->writeClassFile('schema', serialize($schemas));
     }
 
-    private function processElement(Element $element, Schema $schema, int $level): void
+    private function processElement(Element $element, Schema $schema, int $level)
     {
         $ns = $this->convertUriToPhpNamespace($schema->getNamespace());
         $this->logType('Element', $element->getName(), $element->getType(), '', $level);
@@ -78,7 +78,7 @@ final class ClassPhpGenerator implements GeneratorInterface
         $this->writeClassFile($ns.'\\'.$name, str_replace(array_keys($replaces), array_values($replaces), static::ELEMENT_TEMPLATE));
     }
 
-    private function scanKnownNs(Schema $schema, array &$namespaces, array &$xmlns): void
+    private function scanKnownNs(Schema $schema, array &$namespaces, array &$xmlns)
     {
         foreach($schema->getNamespaces() as $prefix => $uri) {
             if(false === array_key_exists($uri, $namespaces)) {
@@ -89,7 +89,7 @@ final class ClassPhpGenerator implements GeneratorInterface
         }
     }
 
-    private function processSequence(Sequence $type, ComplexType $complexType, Schema $schema, string $ns, int $level): void
+    private function processSequence(Sequence $type, ComplexType $complexType, Schema $schema, string $ns, int $level)
     {
         $this->logType('SEQUENCE', $complexType->getName(), $ns, '', $level);
         $context = new ClassContext();
@@ -123,7 +123,7 @@ final class ClassPhpGenerator implements GeneratorInterface
         $this->createComplexTypeClass($ns, ucfirst($complexType->getName()).'_Sequence', $context, 'sequence', $schema);
     }
 
-    private function processChoice(Choice $type, ComplexType $complexType, Schema $schema, string $ns, int $level): void
+    private function processChoice(Choice $type, ComplexType $complexType, Schema $schema, string $ns, int $level)
     {
         $this->logType('Choice', '', '', '', $level);
         $context = new ClassContext();
@@ -185,7 +185,7 @@ final class ClassPhpGenerator implements GeneratorInterface
         $this->createComplexTypeClass($ns, $this->convertXsdTypeToName($complexType->getName().'_Choice'), $context, 'CHOICE', $schema);
     }
 
-    private function processComplexTypeAll(All $all, ClassContext $context, Schema $schema, string $ns, int $level): void
+    private function processComplexTypeAll(All $all, ClassContext $context, Schema $schema, string $ns, int $level)
     {
         $this->logType('ALL', '', $ns, '', $level);
         foreach($all->getElements() as $element) {
@@ -203,7 +203,7 @@ final class ClassPhpGenerator implements GeneratorInterface
         }
     }
 
-    private function processComplexType(ComplexType $complexType, Schema $schema, int $level): void
+    private function processComplexType(ComplexType $complexType, Schema $schema, int $level)
     {
         $ns = $this->convertUriToPhpNamespace($schema->getNamespace());
         $this->logType('ComplexType', $complexType->getName(), '', '', $level);
@@ -246,7 +246,7 @@ final class ClassPhpGenerator implements GeneratorInterface
         $this->createComplexTypeClass($ns, $name, $context, $comment, $schema);
     }
 
-    private function processComplexTypeSequence(Sequence $sequence, ComplexType $complexType, ClassContext $context, Schema $schema, string $ns, int $level): void
+    private function processComplexTypeSequence(Sequence $sequence, ComplexType $complexType, ClassContext $context, Schema $schema, string $ns, int $level)
     {
         $this->logType('Sequence', '', '', '', $level + 1);
         foreach($sequence->getElements() as $element) {
@@ -288,7 +288,7 @@ final class ClassPhpGenerator implements GeneratorInterface
         }
     }
 
-    private function processComplexTypeChoice(Choice $type, ComplexType $complexType, ClassContext $context, Schema $schema, string $ns, int $level): void
+    private function processComplexTypeChoice(Choice $type, ComplexType $complexType, ClassContext $context, Schema $schema, string $ns, int $level)
     {
         $context->ctorVisibility = 'private';
         foreach($type->getElements() as $element) {
@@ -297,7 +297,7 @@ final class ClassPhpGenerator implements GeneratorInterface
                 $typeName = $this->convertXsdTypeToName($element->getType());
                 $varName = $element->getName();
                 $context->uses[] = $this->convertXsdTypeToFqcn($schema, $ns, $element->getType());
-                $context->getters[] = '    public function get'.ucfirst($varName).'(): ?'.ucfirst($typeName).' { return $this->'.$varName.'; }';
+                $context->getters[] = '    public function get'.ucfirst($varName).'() { return $this->'.$varName.'; }';
                 $context->properties[] = '    /** @var ?'.$typeName.' */'."\n".'    private $'.$varName.';';
                 $context->xmlGen[] = $this->generateXmlElement($element, $schema);
                 $context->namedCtors[] = '    /** ComplexType/Choice/Element */
@@ -343,7 +343,7 @@ final class ClassPhpGenerator implements GeneratorInterface
         }
     }
 
-    private function processSimpleType(SimpleType $simpleType, Schema $schema, int $level): void
+    private function processSimpleType(SimpleType $simpleType, Schema $schema, int $level)
     {
         $ns = $this->convertUriToPhpNamespace($schema->getNamespace());
         $this->logType('SimpleType', $simpleType->getName(), $simpleType->getType()->getBase(), '', $level);
@@ -397,7 +397,7 @@ final class ClassPhpGenerator implements GeneratorInterface
 
     /* --- UTILITIES -------------------------------------------------------- */
 
-    private function createComplexTypeClass(string $ns, string $name, ClassContext $context, string $comment, Schema $schema): void
+    private function createComplexTypeClass(string $ns, string $name, ClassContext $context, string $comment, Schema $schema)
     {
         $replaces = [
             '<COMMENT>' => $comment,
@@ -511,13 +511,13 @@ final class ClassPhpGenerator implements GeneratorInterface
         switch(true) {
             case null === $minOccurs && null === $maxOccurs: { $type = $this->convertXsdTypeToName($type); break; }
             case 1 === $minOccurs && 1 === $maxOccurs: { $type = $this->convertXsdTypeToName($type); break; }
-            case 0 === $minOccurs && 1 === $maxOccurs: { $type = '?'.$this->convertXsdTypeToName($type); break; }
+            case 0 === $minOccurs && 1 === $maxOccurs: { $type = null; break; }
             case 1 === $minOccurs && 'unbounded' === $maxOccurs: { $type = 'array'; break; }
             case 0 === $minOccurs && 'unbounded' === $maxOccurs: { $type = 'array'; break; }
             default: { throw new \RuntimeException(sprintf('Invalid arg type combination: %s!', json_encode(func_get_args()))); }
         }
 
-        return '    public function get'.ucfirst($name).'(): '.$type.' { return $this->'.$name.'; }';
+        return '    public function get'.ucfirst($name).'()'.($type ? ': '.$type : '').' { return $this->'.$name.'; }';
     }
 
     private function createProperty(string $type, string $name, $minOccurs, $maxOccurs): string
@@ -550,23 +550,23 @@ final class ClassPhpGenerator implements GeneratorInterface
         return strpos($type, ':') ? ucfirst(explode(':', $type, 2)[1]) : ucfirst($type);
     }
 
-    private function writeClassFile($fqcn, $code): void
+    private function writeClassFile($fqcn, $code)
     {
         $this->writer->write(str_replace('\\', '/', $this->namespaceResolver->convertFqcnToPath($fqcn)).'.php', $code);
     }
 
-    private function logType($logType, $type, $elementName, $xmlName, int $level): void
+    private function logType($logType, $type, $elementName, $xmlName, int $level)
     {
         $this->log(sprintf("\e[36m%s\e[0m \e[38m%s\e[0m \e[32m%s\e[0m \e[31m%s\e[0m", $logType, $type, $elementName, $xmlName), $level);
     }
 
-    private function log(string $message, int $level): void
+    private function log(string $message, int $level)
     {
         $this->logger->log(str_pad('', $level * 2, ' ').$message);
     }
 
     // FIXME: remove these templates and reuse generic class template (and approach) from PrimitivePhpGenerator
-    private const ELEMENT_TEMPLATE = <<<'EOF'
+    const ELEMENT_TEMPLATE = <<<'EOF'
 <?php
 /** ELEMENT TYPE */
 declare(strict_types=1);
@@ -612,7 +612,7 @@ final class <CLASS_NAME> implements XmlObjectInterface
 
 EOF;
 
-    private const COMPLEX_TYPE_TEMPLATE = <<<'EOF'
+    const COMPLEX_TYPE_TEMPLATE = <<<'EOF'
 <?php
 /** <COMMENT> */
 declare(strict_types=1);
@@ -661,7 +661,7 @@ final class <CLASS_NAME> implements XmlObjectInterface
 
 EOF;
 
-    private const SIMPLE_TYPE_TEMPLATE = <<<'EOF'
+    const SIMPLE_TYPE_TEMPLATE = <<<'EOF'
 <?php
 /** SIMPLE TYPE */
 declare(strict_types=1);

@@ -68,7 +68,7 @@ final class SchemaContainer
         return $namespaces;
     }
 
-    private function findUrisForInner(Schema $schema, array &$namespaces): void
+    private function findUrisForInner(Schema $schema, array &$namespaces)
     {
         foreach($schema->getNamespaces() as $uri => $prefix) {
             $namespaces[$uri] = $prefix;

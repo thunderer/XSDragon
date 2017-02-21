@@ -281,7 +281,7 @@ final class PrimitiveXmlParser implements XmlParserInterface
         return $children;
     }
 
-    private function findXmlNamespaces(\DOMElement $xml, array &$ns): void
+    private function findXmlNamespaces(\DOMElement $xml, array &$ns)
     {
         if(false === array_key_exists($xml->prefix, $ns)) {
             $this->log(0, 'Namespace', $xml->prefix ?: '*EMPTY*', $xml->namespaceURI);
@@ -377,7 +377,7 @@ final class PrimitiveXmlParser implements XmlParserInterface
         }
     }
 
-    private function log(int $level, string ...$message): void
+    private function log(int $level, string ...$message)
     {
         XsdUtility::log($this->logger, $level, ...$message);
     }

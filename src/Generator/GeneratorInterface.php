@@ -6,5 +6,5 @@ use Thunder\Xsdragon\Schema\SchemaContainer;
 
 interface GeneratorInterface
 {
-    public function generate(SchemaContainer $schemas): void;
+    public function generate(SchemaContainer $schemas);
 }

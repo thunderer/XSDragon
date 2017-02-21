@@ -145,7 +145,7 @@ final class PrimitiveStringXmlSerializer implements XmlSerializerInterface
         }
     }
 
-    private function log(int $level, string ...$message): void
+    private function log(int $level, string ...$message)
     {
         XsdUtility::log($this->logger, $level, ...$message);
     }

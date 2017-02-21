@@ -261,7 +261,7 @@ final class ClassXmlParser implements XmlParserInterface
 
     /* --- UTILITIES -------------------------------------------------------- */
 
-    private function findXmlNamespaces(\DOMElement $xml, array &$ns): void
+    private function findXmlNamespaces(\DOMElement $xml, array &$ns)
     {
         $ns[$xml->prefix] = $xml->namespaceURI;
 
@@ -308,27 +308,27 @@ final class ClassXmlParser implements XmlParserInterface
         }
     }
 
-    private function logType(string $logType, string $type, string $elementName, string $xmlName, int $level): void
+    private function logType(string $logType, string $type, string $elementName, string $xmlName, int $level)
     {
         $this->log(sprintf("\e[36m%s\e[0m \e[38m%s\e[0m \e[32m%s\e[0m \e[31m%s\e[0m", $logType, $type, $elementName, $xmlName), $level);
     }
 
-    private function logValue(string $type, string $elementName, string $xmlName, string $value, int $level): void
+    private function logValue(string $type, string $elementName, string $xmlName, string $value, int $level)
     {
         $this->log(sprintf("\e[36mVALUE\e[0m \e[29m%s\e[0m \e[33m%s\e[0m \e[32m%s\e[0m \e[31m%s\e[0m \e[37m%s\e[0m", $level, $type, $elementName, $xmlName, $value), $level);
     }
 
-    private function logInit(string $type, string $elementName, string $xmlName, int $level): void
+    private function logInit(string $type, string $elementName, string $xmlName, int $level)
     {
         $this->log(sprintf("\e[34mINIT\e[0m \e[29m%s\e[0m \e[33m%s\e[0m \e[32m%s\e[0m \e[31m%s\e[0m", $level, $type, $elementName, $xmlName), $level);
     }
 
-    private function logExit(string $type, string $elementName, string $xmlName, int $level): void
+    private function logExit(string $type, string $elementName, string $xmlName, int $level)
     {
         $this->log(sprintf("\e[35mEXIT\e[0m \e[29m%s\e[0m \e[33m%s\e[0m \e[32m%s\e[0m \e[31m%s\e[0m", $level, $type, $elementName, $xmlName), $level);
     }
 
-    private function log(string $message, int $level): void
+    private function log(string $message, int $level)
     {
         XsdUtility::log($this->logger, $level, $message);
     }

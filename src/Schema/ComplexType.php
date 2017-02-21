@@ -15,7 +15,7 @@ final class ComplexType
     /** @var ?string */
     private $documentation;
 
-    public function __construct(string $namespaceUri, string $name, $type, array $attributes, ?string $documentation)
+    public function __construct(string $namespaceUri, string $name, $type, array $attributes, string $documentation = null)
     {
         $validTypes = [ComplexType::class, Sequence::class, All::class, ComplexContent::class, Choice::class, SimpleContent::class];
         if(null !== $type && false === (is_object($type) && in_array(get_class($type), $validTypes, true))) {
@@ -50,7 +50,7 @@ final class ComplexType
         return $this->attributes;
     }
 
-    public function getDocumentation(): ?string
+    public function getDocumentation()
     {
         return $this->documentation;
     }

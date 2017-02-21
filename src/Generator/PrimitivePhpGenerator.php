@@ -40,7 +40,7 @@ final class PrimitivePhpGenerator implements GeneratorInterface
         $this->counter = $counter;
     }
 
-    public function generate(SchemaContainer $schemas): void
+    public function generate(SchemaContainer $schemas)
     {
         $this->counter->start();
         $this->schemas = $schemas;
@@ -89,7 +89,7 @@ final class PrimitivePhpGenerator implements GeneratorInterface
         return $context;
     }
 
-    private function complexTypeBody(ComplexType $complexType, Schema $schema, ClassContext $context, int $level, callable $log): void
+    private function complexTypeBody(ComplexType $complexType, Schema $schema, ClassContext $context, int $level, callable $log)
     {
         $this->dispatch($complexType, $complexType->getAttributes(), $schema, $context, $level);
         $innerType = $complexType->getType();
@@ -216,7 +216,7 @@ final class PrimitivePhpGenerator implements GeneratorInterface
     }';
                 $context->properties[] = '    /** @var '.$type.' */'."\n".'    private $'.$element->getName().';';
                 $context->getters[] = '    public function has'.ucfirst($element->getName()).'(): bool { return null !== $this->'.$element->getName().'; }';
-                $context->getters[] = '    public function get'.ucfirst($element->getName()).'()'.($type ? ': ?'.$type : '').' { return $this->'.$element->getName().'; }';
+                $context->getters[] = '    public function get'.ucfirst($element->getName()).'()'.' { return $this->'.$element->getName().'; }';
             } elseif($element instanceof Sequence) {
                 $this->counter->tickSequence();
                 $this->log($level, 'Choice/Sequence', $parent->getName());
@@ -239,7 +239,7 @@ final class PrimitivePhpGenerator implements GeneratorInterface
 
                         $context->properties[] = '    /** @var '.$type.' */'."\n".'    private $'.$seqElement->getName().';';
                         $context->getters[] = '    public function has'.ucfirst($seqElement->getName()).'(): bool { return null !== $this->'.$seqElement->getName().'; }';
-                        $context->getters[] = '    public function get'.ucfirst($seqElement->getName()).'()'.($type ? ': ?'.$type : '').' { return $this->'.$seqElement->getName().'; }';
+                        $context->getters[] = '    public function get'.ucfirst($seqElement->getName()).'()'.' { return $this->'.$seqElement->getName().'; }';
                     } else {
                         throw new \RuntimeException(sprintf('Invalid Choice Sequence element %s!', XsdUtility::describe($seqElement)));
                     }
@@ -280,7 +280,7 @@ final class PrimitivePhpGenerator implements GeneratorInterface
         $this->writeClass($context);
     }
 
-    private function dispatch($parent, array $elements, Schema $schema, ClassContext $context, int $level): void
+    private function dispatch($parent, array $elements, Schema $schema, ClassContext $context, int $level)
     {
         if($parent instanceof Element) {
             $parentName = $parent->getName();
@@ -416,7 +416,7 @@ final class PrimitivePhpGenerator implements GeneratorInterface
         return '    public function get'.ucfirst($name).'(): '.$this->convertXsdTypeToName($schema, $type).' { return $this->'.$name.'; }';
     }
 
-    private function writeClass(ClassContext $context): void
+    private function writeClass(ClassContext $context)
     {
         $this->counter->tickClass();
         $context->getters[] = '    public function getXmlNamespace(): string { return \''.$context->xmlNamespace.'\'; }';
@@ -482,7 +482,7 @@ final class PrimitivePhpGenerator implements GeneratorInterface
         return $type ? $this->namespaceResolver->convertUriToNs($schema->getNamespace()).'\\'.ucfirst($type) : '';
     }
 
-    private function handleParameter(ClassContext $context, Schema $schema, string $name, $type, $minOccurs, $maxOccurs, string $comment): void
+    private function handleParameter(ClassContext $context, Schema $schema, string $name, $type, $minOccurs, $maxOccurs, string $comment)
     {
         if(null === $type) {
             $context->ctorArgs[] = '$'.$name;
@@ -526,23 +526,24 @@ final class PrimitivePhpGenerator implements GeneratorInterface
 
         $type = $this->resolveRealTypeName($schema, $type);
         $xsdTypeName = $this->convertXsdTypeToName($schema, $type);
+        $optional = false;
         switch(true) {
             case null === $minOccurs && null === $maxOccurs: { $typeName = $xsdTypeName; break; }
             case 1 === $minOccurs && 1 === $maxOccurs: { $typeName = $xsdTypeName; break; }
-            case 0 === $minOccurs && 1 === $maxOccurs: { $typeName = '?'.$xsdTypeName; break; }
+            case 0 === $minOccurs && 1 === $maxOccurs: { $typeName = $xsdTypeName; $optional = true; break; }
             case 1 === $minOccurs && 'unbounded' === $maxOccurs: { $typeName = 'array'; break; }
             case 0 === $minOccurs && 'unbounded' === $maxOccurs: { $typeName = 'array'; break; }
             case null === $minOccurs && 'unbounded' === $maxOccurs: { $typeName = 'array'; break; }
             case 0 === $minOccurs && is_int($maxOccurs) && $maxOccurs > 1: { $typeName = 'array'; break; }
-            case 0 === $minOccurs && null === $maxOccurs: { $typeName = '?'.$xsdTypeName; break; }
+            case 0 === $minOccurs && null === $maxOccurs: { $typeName = $xsdTypeName; $optional = true; break; }
             default: { throw new \RuntimeException(sprintf('Invalid arg type combination: `%s`%s`!', XsdUtility::describe($minOccurs), XsdUtility::describe($maxOccurs))); }
         }
 
         $context->properties[] = '    /** @var '.$typeName.' */'."\n".'    private $'.$name.';';
-        $context->ctorArgs[] = $typeName.' $'.$name;
+        $context->ctorArgs[] = $typeName.' $'.$name.($optional ? ' = null' : '');
         $context->ctorAssigns[] = '        $this->'.$name.' = $'.$name.'; // '.$comment;
         $context->getters[] = ('array' === $typeName && $xsdTypeName ? '    /** @return '.$xsdTypeName.'[] */'."\n" : '')
-            .'    public function get'.ucfirst($name).'()'.($typeName ? ': '.$typeName : '').' { return $this->'.$name.'; }';
+            .'    public function get'.ucfirst($name).'()'.($optional ? '' : ': '.$typeName).' { return $this->'.$name.'; }';
     }
 
     private function resolveRealTypeName(Schema $schema, $type): string
@@ -620,12 +621,12 @@ final class PrimitivePhpGenerator implements GeneratorInterface
         return strpos($type, ':') ? ucfirst(explode(':', $type, 2)[1]) : ucfirst($type);
     }
 
-    private function log(int $level, string ...$message): void
+    private function log(int $level, string ...$message)
     {
         XsdUtility::log($this->logger, $level, ...$message);
     }
 
-    private const TEMPLATE = <<<'EOF'
+    const TEMPLATE = <<<'EOF'
 <?php
 <COMMENT>
 declare(strict_types=1);

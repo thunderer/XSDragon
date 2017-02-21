@@ -19,7 +19,7 @@ final class Element
     /** @var bool */
     private $isNullable;
 
-    public function __construct(string $namespaceUri, string $name, $type, $minOccurs, $maxOccurs, bool $isNullable, ?string $documentation)
+    public function __construct(string $namespaceUri, string $name, $type, $minOccurs, $maxOccurs, bool $isNullable, string $documentation = null)
     {
         if(null !== $type && false === (is_string($type) && false === empty($type)) && false === $type instanceof SimpleType && false === $type instanceof ComplexType) {
             throw new \InvalidArgumentException(sprintf('Invalid element type %s!', is_object($type) ? get_class($type) : $type));
@@ -65,7 +65,7 @@ final class Element
         return $this->maxOccurs;
     }
 
-    public function getDocumentation(): ?string
+    public function getDocumentation()
     {
         return $this->documentation;
     }
