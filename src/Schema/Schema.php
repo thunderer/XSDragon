@@ -14,6 +14,8 @@ final class Schema
     private $simpleTypes = [];
     /** @var ComplexType[] */
     private $complexTypes = [];
+    /** @var Group[] */
+    private $groups = [];
     /** @var Element[] */
     private $elements = [];
 
@@ -98,6 +100,11 @@ final class Schema
         }
 
         $this->elements[$type->getName()] = $type;
+    }
+
+    public function addGroup(Group $type)
+    {
+        $this->groups[] = $type;
     }
 
     public function findTypeByName(string $name)

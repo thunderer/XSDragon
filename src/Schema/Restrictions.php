@@ -23,10 +23,12 @@ final class Restrictions
     private $maxInclusive;
     /** @var ?int */
     private $fractionDigits;
+    /** @var ?int */
+    private $totalDigits;
 
     public function __construct(string $base, array $enumerations = null, array $patterns = null,
                                 int $length = null, int $minLength = null, int $maxLength = null,
-                                int $minInclusive = null, int $maxInclusive = null, int $fractionDigits = null)
+                                int $minInclusive = null, int $maxInclusive = null, int $fractionDigits = null, int $totalDigits = null)
     {
         $hasAtLeastOneRestriction = count(array_filter(func_get_args())) > 2;
         if(false === $hasAtLeastOneRestriction && null !== $enumerations && empty($enumerations)) {
@@ -53,6 +55,9 @@ final class Restrictions
         if($fractionDigits < 0) {
             throw new \InvalidArgumentException(sprintf('Restriction fractionDigits must be >= 0, %s given!', $fractionDigits));
         }
+        if($totalDigits < 0) {
+            throw new \InvalidArgumentException(sprintf('Restriction totalDigits must be >= 0, %s given!', $totalDigits));
+        }
 
         $this->base = $base;
         $this->enumerations = $enumerations ?? [];
@@ -63,6 +68,7 @@ final class Restrictions
         $this->minInclusive = $minInclusive;
         $this->maxInclusive = $maxInclusive;
         $this->fractionDigits = $fractionDigits;
+        $this->totalDigits = $totalDigits;
     }
 
     public static function createFromEnumerations(string $base, array $enumerations)
@@ -72,81 +78,52 @@ final class Restrictions
 
     public static function createFromPatterns(string $base, array $patterns)
     {
-        return new static($base, null, $patterns, null, null, null, null, null, null);
+        return new static($base, null, $patterns, null, null, null, null, null, null, null);
     }
 
     public static function createFromLength(string $base, int $length)
     {
-        return new static($base, null, null, $length, null, null, null, null, null);
+        return new static($base, null, null, $length, null, null, null, null, null, null);
     }
 
     public static function createFromMinLength(string $base, int $minLength)
     {
-        return new static($base, null, null, null, $minLength, null, null, null, null);
+        return new static($base, null, null, null, $minLength, null, null, null, null, null);
     }
 
     public static function createFromMaxLength(string $base, int $maxLength)
     {
-        return new static($base, null, null, null, null, $maxLength, null, null, null);
+        return new static($base, null, null, null, null, $maxLength, null, null, null, null);
     }
 
     public static function createFromMinInclusive(string $base, int $minInclusive)
     {
-        return new static($base, null, null, null, null, null, $minInclusive, null, null);
+        return new static($base, null, null, null, null, null, $minInclusive, null, null, null);
     }
 
     public static function createFromMaxInclusive(string $base, int $maxInclusive)
     {
-        return new static($base, null, null, null, null, null, null, $maxInclusive, null);
+        return new static($base, null, null, null, null, null, null, $maxInclusive, null, null);
     }
 
     public static function createFromFractionDigits(string $base, int $fractionDigits)
     {
-        return new static($base, null, null, null, null, null, null, null, $fractionDigits);
+        return new static($base, null, null, null, null, null, null, null, $fractionDigits, null);
     }
 
-    public function getBase(): string
+    public static function createFromTotalDigits(string $base, int $totalDigits)
     {
-        return $this->base;
+        return new static($base, null, null, null, null, null, null, null, null, $totalDigits);
     }
 
-    public function getEnumerations(): array
-    {
-        return $this->enumerations;
-    }
-
-    public function getPatterns(): array
-    {
-        return $this->patterns;
-    }
-
-    public function getLength()
-    {
-        return $this->length;
-    }
-
-    public function getMinLength()
-    {
-        return $this->minLength;
-    }
-
-    public function getMaxLength()
-    {
-        return $this->maxLength;
-    }
-
-    public function getMinInclusive()
-    {
-        return $this->minInclusive;
-    }
-
-    public function getMaxInclusive()
-    {
-        return $this->maxInclusive;
-    }
-
-    public function getFractionDigits()
-    {
-        return $this->fractionDigits;
-    }
+    public function getBase(): string { return $this->base; }
+    public function getEnumerations(): array { return $this->enumerations; }
+    public function getPatterns(): array { return $this->patterns; }
+    public function getLength() { return $this->length; }
+    public function getMinLength() { return $this->minLength; }
+    public function getMaxLength() { return $this->maxLength; }
+    public function getMinInclusive() { return $this->minInclusive; }
+    public function getMaxInclusive() { return $this->maxInclusive; }
+    public function getFractionDigits() { return $this->fractionDigits; }
+    public function getTotalDigits() { return $this->totalDigits; }
 }

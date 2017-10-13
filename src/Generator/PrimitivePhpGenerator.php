@@ -109,6 +109,9 @@ final class PrimitivePhpGenerator implements GeneratorInterface
             // FIXME: add support
         } elseif($innerType instanceof ComplexContent) {
             $log('ComplexContent');
+            if('xsd:anyType' === $innerType->getType()->getBase()) {
+                return; // FIXME: add support!
+            }
             list($xschema, $xtype) = $this->findTypeEverywhere($this->schemas, $schema, $innerType->getType()->getBase());
             $this->complexTypeBody($xtype, $xschema, $context, $level, $log);
             // FIXME: this is hardcoded for ComplexContent with Sequence
@@ -139,6 +142,11 @@ final class PrimitivePhpGenerator implements GeneratorInterface
             if(strpos($element->getType(), ':')) {
                 $schemaUris = $this->schemas->findUrisFor($schema);
                 list($prefix, $type) = explode(':', $element->getType(), 2);
+                if(XsdUtility::isPrimitiveType('{'.$schemaUris[$prefix].'}'.$type)) {
+                    $this->log($level, 'Primitive', $element->getName(), $type, XsdUtility::occurs($element));
+                    $this->handleParameter($context, $schema, $element->getName(), $type, $element->getMinOccurs(), $element->getMaxOccurs(), 'Primitive');
+                    return $context;
+                }
                 $schema = $this->schemas->findSchemaByNs($schemaUris[$prefix]);
             }
 
@@ -197,6 +205,7 @@ final class PrimitivePhpGenerator implements GeneratorInterface
                 $this->counter->tickElement();
                 $this->log($level, 'Choice/Element', $element->getName(), XsdUtility::describe($element->getType()), XsdUtility::occurs($element));
 
+                // FIXME: handle `ref` attribute!
                 $type = $this->resolveRealTypeName($schema, $element->getType());
                 if(XsdUtility::isPrimitiveType($type)) {
                     $type = XsdUtility::getPrimitivePhpType($type);
@@ -535,6 +544,9 @@ final class PrimitivePhpGenerator implements GeneratorInterface
             case 0 === $minOccurs && 'unbounded' === $maxOccurs: { $typeName = 'array'; break; }
             case null === $minOccurs && 'unbounded' === $maxOccurs: { $typeName = 'array'; break; }
             case 0 === $minOccurs && is_int($maxOccurs) && $maxOccurs > 1: { $typeName = 'array'; break; }
+            case 1 === $minOccurs && is_int($maxOccurs) && $maxOccurs > 1: { $typeName = 'array'; break; }
+            case is_int($minOccurs) && $minOccurs > 1 && is_int($maxOccurs) && $maxOccurs > 1: { $typeName = 'array'; break; }
+            case is_int($minOccurs) && $minOccurs > 1 && 'unbounded' === $maxOccurs: { $typeName = 'array'; break; }
             case 0 === $minOccurs && null === $maxOccurs: { $typeName = $xsdTypeName; $optional = true; break; }
             default: { throw new \RuntimeException(sprintf('Invalid arg type combination: `%s`%s`!', XsdUtility::describe($minOccurs), XsdUtility::describe($maxOccurs))); }
         }
