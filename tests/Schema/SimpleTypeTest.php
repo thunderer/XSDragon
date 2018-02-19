@@ -32,7 +32,7 @@ final class SimpleTypeTest extends TestCase
     public function testSimpleTypeExceptionWhenInvalidType()
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('SimpleType type can be either null, Restrictions or Union, ');
+        $this->expectExceptionMessage('SimpleType type can be either null, Restrictions, Union, or List');
         new SimpleType('ns', 'name', null, new \stdClass());
     }
 }

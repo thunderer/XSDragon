@@ -1,0 +1,19 @@
+language: php
+
+php:
+  - 7.0
+  - 7.1
+  - 7.2
+  - nightly
+
+sudo: false
+
+before_script:
+  - COMPOSER_ROOT_VERSION=dev-master composer install
+
+script:
+ - vendor/bin/phpunit --coverage-text
+
+matrix:
+  allow_failures:
+    - php: nightly

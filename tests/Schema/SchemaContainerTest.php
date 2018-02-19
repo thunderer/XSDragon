@@ -11,7 +11,7 @@ final class SchemaContainerTest extends TestCase
 {
     public function testSchemaContainer()
     {
-        $schema = new Schema('ns', ['prefix' => 'xmlns']);
+        $schema = new Schema('location', 'ns', ['prefix' => 'xmlns']);
         $container = new SchemaContainer([$schema]);
 
         $this->assertSame(1, $container->countSchemas());
@@ -35,7 +35,7 @@ final class SchemaContainerTest extends TestCase
 
     public function testExceptionWhenSchemaNotFound()
     {
-        $schema = new Schema('ns', ['prefix' => 'xmlns']);
+        $schema = new Schema('location', 'ns', ['prefix' => 'xmlns']);
         $container = new SchemaContainer([$schema]);
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Schema with namespace `invalid` not found!');

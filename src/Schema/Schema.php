@@ -5,22 +5,34 @@ namespace Thunder\Xsdragon\Schema;
 final class Schema
 {
     /** @var string */
+    private $location;
+    /** @var string */
     private $namespace;
     /** @var string[] */
     private $namespaces;
     /** @var string[] */
     private $imports = [];
+    /** @var string[] */
+    private $includes = [];
     /** @var SimpleType[] */
     private $simpleTypes = [];
     /** @var ComplexType[] */
     private $complexTypes = [];
+    /** @var Group[] */
+    private $groups = [];
     /** @var Element[] */
     private $elements = [];
 
-    public function __construct($namespace, array $namespaces)
+    public function __construct($location, $namespace, array $namespaces)
     {
+        $this->location = $location;
         $this->namespace = $namespace;
         $this->namespaces = $namespaces;
+    }
+
+    public function getLocation()
+    {
+        return $this->location;
     }
 
     public function getNamespace(): string
@@ -36,6 +48,11 @@ final class Schema
     public function getImports(): array
     {
         return $this->imports;
+    }
+
+    public function getIncludes(): array
+    {
+        return $this->includes;
     }
 
     public function getSimpleTypes()
@@ -73,6 +90,11 @@ final class Schema
         $this->imports[] = $import;
     }
 
+    public function addInclude(string $include)
+    {
+        $this->includes[] = $include;
+    }
+
     public function addSimpleType(SimpleType $type)
     {
         if($this->hasSimpleTypeWithName($type->getName())) {
@@ -98,6 +120,11 @@ final class Schema
         }
 
         $this->elements[$type->getName()] = $type;
+    }
+
+    public function addGroup(Group $type)
+    {
+        $this->groups[] = $type;
     }
 
     public function findTypeByName(string $name)

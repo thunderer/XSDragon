@@ -13,6 +13,7 @@ use Thunder\Xsdragon\Schema\ComplexContent;
 use Thunder\Xsdragon\Schema\ComplexType;
 use Thunder\Xsdragon\Schema\Element;
 use Thunder\Xsdragon\Schema\Extension;
+use Thunder\Xsdragon\Schema\ListNode;
 use Thunder\Xsdragon\Schema\Restrictions;
 use Thunder\Xsdragon\Schema\Schema;
 use Thunder\Xsdragon\Schema\SchemaContainer;
@@ -47,7 +48,7 @@ final class PrimitivePhpGenerator implements GeneratorInterface
 
         foreach($schemas->getSchemas() as $schema) {
             $this->counter->tickSchema();
-            $this->log(0, 'Schema', str_pad($schema->getNamespace().' ', 110, '/'), str_pad('', 5, '\\').' '.$this->namespaceResolver->convertUriToNs($schema->getNamespace()));
+            $this->log(0, 'Schema', '//////////', $schema->getNamespace(), (string)$schema->getLocation(), str_pad('', 5, '\\').' '.$this->namespaceResolver->convertUriToNs($schema->getNamespace()));
             $this->log(0, '');
             foreach($schema->getElements() as $element) {
                 $this->log(1, 'RElement', $element->getName());
@@ -109,6 +110,15 @@ final class PrimitivePhpGenerator implements GeneratorInterface
             // FIXME: add support
         } elseif($innerType instanceof ComplexContent) {
             $log('ComplexContent');
+            if(null === $innerType->getType()) {
+                return;
+            }
+            if($innerType->getType() instanceof Extension && $innerType->getType()->getBase() === 'xs:anyType') {
+                return;
+            }
+            if('xsd:anyType' === $innerType->getType()->getBase()) {
+                return; // FIXME: add support!
+            }
             list($xschema, $xtype) = $this->findTypeEverywhere($this->schemas, $schema, $innerType->getType()->getBase());
             $this->complexTypeBody($xtype, $xschema, $context, $level, $log);
             // FIXME: this is hardcoded for ComplexContent with Sequence
@@ -139,11 +149,19 @@ final class PrimitivePhpGenerator implements GeneratorInterface
             if(strpos($element->getType(), ':')) {
                 $schemaUris = $this->schemas->findUrisFor($schema);
                 list($prefix, $type) = explode(':', $element->getType(), 2);
+                if(XsdUtility::isPrimitiveType('{'.$schemaUris[$prefix].'}'.$type)) {
+                    $this->log($level, 'Primitive', $element->getName(), $type, XsdUtility::occurs($element));
+                    $this->handleParameter($context, $schema, $element->getName(), $type, $element->getMinOccurs(), $element->getMaxOccurs(), 'Primitive');
+                    return $context;
+                }
                 $schema = $this->schemas->findSchemaByNs($schemaUris[$prefix]);
             }
 
-            $realType = $schema->findElementTypeByName($type);
-
+            try {
+                $realType = $schema->findElementTypeByName($type);
+            } catch(\RuntimeException $e) {
+                $realType = $this->findTypeEverywhere($this->schemas, $schema, $type)[1];
+            }
             if($realType instanceof ComplexType) {
                 $log = function(string $header) use($level, $element, $realType) {
                     $this->log($level, $header, $element->getName(), $realType->getName(), XsdUtility::occurs($element));
@@ -197,6 +215,7 @@ final class PrimitivePhpGenerator implements GeneratorInterface
                 $this->counter->tickElement();
                 $this->log($level, 'Choice/Element', $element->getName(), XsdUtility::describe($element->getType()), XsdUtility::occurs($element));
 
+                // FIXME: handle `ref` attribute!
                 $type = $this->resolveRealTypeName($schema, $element->getType());
                 if(XsdUtility::isPrimitiveType($type)) {
                     $type = XsdUtility::getPrimitivePhpType($type);
@@ -359,7 +378,6 @@ final class PrimitivePhpGenerator implements GeneratorInterface
 
     private function findTypeEverywhere(SchemaContainer $schemas, Schema $schema, string $name)
     {
-        // FIXME: some schemas use xsd:include, need to add that to Analyzer and search here, because those are *NOT* referenced namespaces!
         if(false !== strpos($name, ':')) {
             list($prefix, $name) = explode(':', $name, 2);
             $namespaces = $schema->getNamespaces();
@@ -367,11 +385,50 @@ final class PrimitivePhpGenerator implements GeneratorInterface
                 throw new \RuntimeException(sprintf('Failed to find prefix %s among %s!', $prefix.':'.$name, json_encode($namespaces)));
             }
             $schema = $schemas->findSchemaByNs($namespaces[$prefix]);
-
-            return [$schema, $schema->findTypeByName($name)];
         }
 
-        return [$schema, $schema->findTypeByName($name)];
+        $type = null;
+        try {
+            $type = $schema->findTypeByName($name);
+        } catch(\RuntimeException $e) {
+            $visited = [];
+            $type = $this->findTypeEverywhereTraverseIncludes($schemas, $schema, $name, $visited);
+        }
+
+        return [$schema, $type];
+    }
+
+    private function findTypeEverywhereTraverseIncludes(SchemaContainer $schemas, Schema $schema, string $name, array &$visited)
+    {
+        // xsd:include is for referencing elements in the same namespace
+        // defined in different files. the schemaLocation attribute defines
+        // relative schema file location in the filesystem
+        foreach($schema->getIncludes() as $include) {
+            if(in_array($include, $visited, true)) {
+                continue;
+            }
+            $visited[] = $include;
+            try {
+                $innerSchema = $schemas->findSchemaByLocation($include);
+            } catch(\RuntimeException $e) {
+                continue;
+            }
+            try {
+                return $innerSchema->findTypeByName($name);
+            } catch(\RuntimeException $e) {
+                try {
+                    $type = $this->findTypeEverywhereTraverseIncludes($schemas, $innerSchema, $name, $visited);
+                    if(null === $type) {
+                        continue;
+                    }
+                    return $type;
+                } catch(\RuntimeException $e) {
+                    // shh...
+                }
+            }
+        }
+
+        return null;
     }
 
     private function restrictionChecks(Restrictions $res, string $name)
@@ -534,7 +591,11 @@ final class PrimitivePhpGenerator implements GeneratorInterface
             case 1 === $minOccurs && 'unbounded' === $maxOccurs: { $typeName = 'array'; break; }
             case 0 === $minOccurs && 'unbounded' === $maxOccurs: { $typeName = 'array'; break; }
             case null === $minOccurs && 'unbounded' === $maxOccurs: { $typeName = 'array'; break; }
+            case null === $minOccurs && is_int($maxOccurs) && $maxOccurs > 1: { $typeName = 'array'; break; }
             case 0 === $minOccurs && is_int($maxOccurs) && $maxOccurs > 1: { $typeName = 'array'; break; }
+            case 1 === $minOccurs && is_int($maxOccurs) && $maxOccurs > 1: { $typeName = 'array'; break; }
+            case is_int($minOccurs) && $minOccurs > 1 && is_int($maxOccurs) && $maxOccurs > 1: { $typeName = 'array'; break; }
+            case is_int($minOccurs) && $minOccurs > 1 && 'unbounded' === $maxOccurs: { $typeName = 'array'; break; }
             case 0 === $minOccurs && null === $maxOccurs: { $typeName = $xsdTypeName; $optional = true; break; }
             default: { throw new \RuntimeException(sprintf('Invalid arg type combination: `%s`%s`!', XsdUtility::describe($minOccurs), XsdUtility::describe($maxOccurs))); }
         }
@@ -552,7 +613,13 @@ final class PrimitivePhpGenerator implements GeneratorInterface
             if($type->getType() instanceof Restrictions) {
                 $type = $type->getType()->getBase();
             } elseif($type->getType() instanceof Union) {
-                $type = $type->getType()->getMemberTypes()[0];
+                $type = $type->getType()->getMemberTypes();
+                if(empty($type)) {
+                    return '';  // FIXME: case with Attribute -> SimpleType -> Union -> SimpleTypes with Restrictions
+                }
+                $type = $type[0];
+            } elseif($type->getType() instanceof ListNode) {
+                $type = $type->getType()->getItemType();
             }
         }
 
@@ -591,7 +658,7 @@ final class PrimitivePhpGenerator implements GeneratorInterface
         try {
             $typeObject = $schema->findTypeByName($type);
 
-            if($typeObject instanceof SimpleType) {
+            if($typeObject instanceof SimpleType && $typeObject->getType() instanceof Restrictions) {
                 return $typeObject->getType()->getBase();
             }
 

@@ -15,6 +15,9 @@ use Thunder\Xsdragon\Schema\Sequence;
 use Thunder\Xsdragon\Schema\SimpleType;
 use Thunder\Xsdragon\Filesystem\FilesystemInterface;
 
+/**
+ * @deprecated Class* classes (generator, parser, serializer) are outdated and not supported, need to be removed as dead code
+ */
 final class ClassPhpGenerator implements GeneratorInterface
 {
     private $writer;
