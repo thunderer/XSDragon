@@ -18,7 +18,7 @@ final class XsdUtility
     public static function logo(): string
     {
         return <<<EOF
-XSDragon (c) 2016-2017 Tomasz Kowalczyk
+XSDragon (c) 2016-2018 Tomasz Kowalczyk
     
     \e[97m██╗  ██╗███████╗██████╗ \e[0m██████╗  █████╗  ██████╗  ██████╗ ███╗   ██╗\e[0m
     \e[97m╚██╗██╔╝██╔════╝██╔══██╗\e[0m██╔══██╗██╔══██╗██╔════╝ ██╔═══██╗████╗  ██║\e[0m
@@ -57,6 +57,9 @@ EOF;
         ], $template);
     }
 
+    /**
+     * @deprecated FIXME: move to SchemaContainer
+     */
     public static function findTypeEverywhere(SchemaContainer $schemas, Schema $schema, string $name)
     {
         if(false !== strpos($name, ':')) {
@@ -72,6 +75,9 @@ EOF;
         return $schema->findTypeByName($name);
     }
 
+    /**
+     * @deprecated FIXME: dead code, remove
+     */
     public static function resolveRealTypeName(SchemaContainer $schemas, Schema $schema, $type): string
     {
         if($type instanceof SimpleType) {

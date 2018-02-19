@@ -11,6 +11,7 @@ use Thunder\Xsdragon\Schema\ComplexType;
 use Thunder\Xsdragon\Schema\Element;
 use Thunder\Xsdragon\Schema\Extension;
 use Thunder\Xsdragon\Schema\Group;
+use Thunder\Xsdragon\Schema\ListNode;
 use Thunder\Xsdragon\Schema\Restrictions;
 use Thunder\Xsdragon\Schema\Schema;
 use Thunder\Xsdragon\Schema\SchemaContainer;
@@ -32,12 +33,8 @@ final class XsdAnalyzer
     public function createFromStrings(array $strings): SchemaContainer
     {
         $schemas = [];
-        $doc = new \DOMDocument();
         foreach($strings as $string) {
-            $xml = clone $doc;
-            $xml->loadXML($string);
-
-            foreach($this->rootNode($xml) as $schema) {
+            foreach($this->createFromString($string, null) as $schema) {
                 $schemas[] = $schema;
             }
         }
@@ -45,23 +42,41 @@ final class XsdAnalyzer
         return new SchemaContainer($schemas);
     }
 
+    private function createFromString(string $xml, $path): array
+    {
+        $doc = new \DOMDocument();
+        $doc->loadXML($xml);
+
+        $schemas = [];
+        foreach($this->rootNode($doc, $path) as $schema) {
+            $schemas[] = $schema;
+        }
+
+        return $schemas;
+    }
+
     public function createFromDirectories(array $paths): SchemaContainer
     {
-        $files = [];
+        $schemas = [];
 
         foreach($paths as $path) {
             /** @var \SplFileInfo $file */
             foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path)) as $file) {
                 if($file->getExtension() !== 'xsd') { continue; }
 
-                $files[] = file_get_contents($file->getPathname());
+                $xml = file_get_contents($file->getPathname());
+                // FIXME: possible faulty relative logic path computation
+                $relativePath = substr($file->getPathname(), $path ? strlen($path) + 1 : '');
+                foreach($this->createFromString($xml, $relativePath) as $schema) {
+                    $schemas[] = $schema;
+                }
             }
         }
 
-        return $this->createFromStrings($files);
+        return new SchemaContainer($schemas);
     }
 
-    private function rootNode(\DOMDocument $node): array
+    private function rootNode(\DOMDocument $node, $path): array
     {
         $schemas = [];
 
@@ -71,7 +86,7 @@ final class XsdAnalyzer
             $childName = $this->prepareXmlName($child);
             switch($childName) {
                 case '#comment': { break; }
-                case '{http://www.w3.org/2001/XMLSchema}schema': { $schemas[] = $this->schema($child); break; }
+                case '{http://www.w3.org/2001/XMLSchema}schema': { $schemas[] = $this->schema($child, $path); break; }
                 default: { throw new \RuntimeException(sprintf('Unhandled %s node %s!', $nodeName, $childName)); }
             }
         }
@@ -79,7 +94,7 @@ final class XsdAnalyzer
         return $schemas;
     }
 
-    private function schema(\DOMElement $node): Schema
+    private function schema(\DOMElement $node, $path): Schema
     {
         $nsAttrs = (new \DOMXPath($node->ownerDocument))->query('namespace::*');
         $namespaces = [];
@@ -95,7 +110,7 @@ final class XsdAnalyzer
         $namespaceUri = $node->getAttribute('xmlns');
         $this->log($level, 'Schema', $namespaceUri);
         // FIXME: make Schema immutable, remove add*()ers
-        $schema = new Schema($namespaceUri, $namespaces);
+        $schema = new Schema($path, $namespaceUri, $namespaces);
 
         $nodeName = $this->prepareXmlName($node);
         /** @var \DOMElement $child */
@@ -108,15 +123,20 @@ final class XsdAnalyzer
                 case '{http://www.w3.org/2001/XMLSchema}simpleType': { $schema->addSimpleType($this->simpleType($namespaceUri, $child, $level + 1)); break; }
                 case '{http://www.w3.org/2001/XMLSchema}import': { $schema->addImport($this->import($child)); break; }
                 case '{http://www.w3.org/2001/XMLSchema}group': { $schema->addGroup($this->group($namespaceUri, $child, $level + 1)); break; }
-                case '{http://www.w3.org/2001/XMLSchema}include': { break; } // FIXME: add support
+                case '{http://www.w3.org/2001/XMLSchema}include': { $schema->addInclude($this->includeNode($child)); break; }
                 case '{http://www.w3.org/2001/XMLSchema}element': { $schema->addElement($this->element($namespaceUri, $child, $level + 1)); break; }
                 case '{http://www.w3.org/2001/XMLSchema}complexType': { $schema->addComplexType($this->complexType($namespaceUri, $child, $level + 1)); break; }
-                case '{http://www.w3.org/2001/XMLSchema}attributeGroup': { break; } // FIXME: add support
+                case '{http://www.w3.org/2001/XMLSchema}attributeGroup': { $this->log($level, 'schema/attributeGroup', '*UNSUPPORTED*'); break; } // FIXME: add support
                 default: { throw new \RuntimeException(sprintf('Unhandled %s node %s!', $nodeName, $childName)); }
             }
         }
 
         return $schema;
+    }
+
+    private function includeNode(\DOMElement $node)
+    {
+        return $node->getAttribute('schemaLocation');
     }
 
     private function import(\DOMElement $node)
@@ -126,6 +146,9 @@ final class XsdAnalyzer
 
     private function element(string $namespaceUri, \DOMElement $node, int $level): Element
     {
+        $name = $node->getAttribute('name');
+        $this->log($level, 'Element', $name);
+
         $documentation = null;
         $simpleType = null;
         $complexType = null;
@@ -156,18 +179,21 @@ final class XsdAnalyzer
             ]));
         }
 
+        // FIXME: is it necessary to differentiate between direct and referenced types?
+        $ref = $node->hasAttribute('ref') ? $node->getAttribute('ref') : null;
         $name = $node->getAttribute('name');
         $minOccurs = $this->extractOccursAttributeValue($node, 'minOccurs');
         $maxOccurs = $this->extractOccursAttributeValue($node, 'maxOccurs');
         $nullable = $node->getAttribute('nillable') === 'true';
 
-        $this->log($level, 'Element', $name);
-
-        return new Element($namespaceUri, $name, $type, $minOccurs, $maxOccurs, $nullable, $documentation);
+        return new Element($namespaceUri, $name, $type ?: $ref, $minOccurs, $maxOccurs, $nullable, $documentation);
     }
 
     private function complexType(string $namespaceUri, \DOMElement $node, int $level): ComplexType
     {
+        $name = $node->getAttribute('name');
+        $this->log($level, 'ComplexType', $name ?: '*EMPTY*');
+
         $documentation = null;
         $sequence = null;
         $all = null;
@@ -204,9 +230,6 @@ final class XsdAnalyzer
             ]));
         }
 
-        $name = $node->getAttribute('name');
-        $this->log($level, 'ComplexType', $name);
-
         return new ComplexType($namespaceUri, $name, array_shift($types), $attributes, $documentation);
     }
 
@@ -215,6 +238,7 @@ final class XsdAnalyzer
         $documentation = null;
         $union = null;
         $restrictions = null;
+        $list = null;
 
         $nodeName = $this->prepareXmlName($node);
         /** @var \DOMElement $child */
@@ -222,10 +246,10 @@ final class XsdAnalyzer
             $childName = $this->prepareXmlName($child);
             switch($childName) {
                 case '#text': { break; }
-                case '{http://www.w3.org/2001/XMLSchema}union': { $union = $this->union($namespaceUri, $child); break; } // FIXME: add support
+                case '{http://www.w3.org/2001/XMLSchema}union': { $union = $this->union($namespaceUri, $child, $level + 1); break; } // FIXME: add support
                 case '{http://www.w3.org/2001/XMLSchema}annotation': { $documentation = $this->annotation($child); break; }
                 case '{http://www.w3.org/2001/XMLSchema}restriction': { $restrictions = $this->restrictions($child); break; }
-                case '{http://www.w3.org/2001/XMLSchema}list': { break; } // FIXME: add support
+                case '{http://www.w3.org/2001/XMLSchema}list': { $list = $this->listNode($child); break; } // FIXME: add support
                 // FIXME: throw my own exception with both nodes and produce proper message with formatted XML
                 default: { throw new \RuntimeException(sprintf('Unhandled %s node %s!', $nodeName, $childName)); }
             }
@@ -234,15 +258,34 @@ final class XsdAnalyzer
         $name = $node->getAttribute('name');
         $this->log($level, 'SimpleType', $name);
 
-        return new SimpleType($namespaceUri, $name, $documentation, $restrictions ?: $union);
+        return new SimpleType($namespaceUri, $name, $documentation, $restrictions ?: $union ?: $list);
     }
 
-    private function union(string $namespaceUri, \DOMElement $node): Union
+    private function listNode(\DOMElement $node): ListNode
     {
+        $itemType = $node->getAttribute('itemType');
+
+        return new ListNode($itemType);
+    }
+
+    private function union(string $namespaceUri, \DOMElement $node, int $level): Union
+    {
+        $simpleTypes = [];
         // FIXME: better validation (regex), preg_split() for valid, but malformed content?
         $memberTypes = $node->hasAttribute('memberTypes') ? explode(' ', $node->getAttribute('memberTypes')) : [];
 
-        return new Union($namespaceUri, $memberTypes);
+        $nodeName = $this->prepareXmlName($node);
+        /** @var \DOMElement $child */
+        foreach($node->childNodes as $child) {
+            $childName = $this->prepareXmlName($child);
+            switch($childName) {
+                case '#text': { break; }
+                case '{http://www.w3.org/2001/XMLSchema}simpleType': { $simpleTypes[] = $this->simpleType($namespaceUri, $child, $level + 1); break; }
+                default: { throw new \RuntimeException(sprintf('Unhandled %s node %s!', $nodeName, $childName)); }
+            }
+        }
+
+        return new Union($namespaceUri, $memberTypes, $simpleTypes);
     }
 
     private function group(string $namespaceUri, \DOMElement $node, int $level): Group

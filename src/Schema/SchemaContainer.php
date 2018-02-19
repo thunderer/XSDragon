@@ -57,6 +57,17 @@ final class SchemaContainer
         }
     }
 
+    public function findSchemaByLocation(string $location): Schema
+    {
+        try {
+            return $this->takeFirst($this->schemas, function(Schema $schema) use($location) {
+                return $schema->getLocation() === $location;
+            });
+        } catch(\RuntimeException $e) {
+            throw new \RuntimeException(sprintf('Schema with location `%s` not found!', $location));
+        }
+    }
+
     public function findUrisFor(Schema $schema): array
     {
         $namespaces = $schema->getNamespaces();

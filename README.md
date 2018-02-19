@@ -32,3 +32,10 @@ $generator->generate($schemas);
 echo XsdUtility::logo();
 echo XsdUtility::formatCounter($counter);
 ```
+
+# Notes
+
+Disabling XDebug greatly improves library performance. Examples from manual tests show more than 10x improvement on analysis and class generation of some XSD schema packages (PHP 7.2.2, i7 2600k, 16GiB DDR3, SSD):
+* ~30 schemas, ~300 classes, ~2.2s down to ~0.3s (7.3x improvement),
+* ~200 schemas, ~7200 classes, ~34.5s down to ~3.2s (10.8x improvement),
+* ~440 schemas, ~36500 classes, ~22.0s down to ~4.4s (5.0x improvement).
