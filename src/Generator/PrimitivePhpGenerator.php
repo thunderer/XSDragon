@@ -5,6 +5,7 @@ namespace Thunder\Xsdragon\Generator;
 use Thunder\Xsdragon\Counter\Counter;
 use Thunder\Xsdragon\Filesystem\FilesystemInterface;
 use Thunder\Xsdragon\Logger\LoggerInterface;
+use Thunder\Xsdragon\Logger\NullLogger;
 use Thunder\Xsdragon\NamespaceResolver\NamespaceResolverInterface;
 use Thunder\Xsdragon\Schema\All;
 use Thunder\Xsdragon\Schema\Attribute;

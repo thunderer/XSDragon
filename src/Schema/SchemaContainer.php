@@ -48,24 +48,24 @@ final class SchemaContainer
 
     public function findSchemaByNs(string $ns): Schema
     {
-        try {
-            return $this->takeFirst($this->schemas, function(Schema $schema) use($ns) {
-                return $schema->getNamespace() === $ns;
-            });
-        } catch(\RuntimeException $e) {
-            throw new \RuntimeException(sprintf('Schema with namespace `%s` not found!', $ns));
+        foreach($this->schemas as $schema) {
+            if($schema->getNamespace() === $ns) {
+                return $schema;
+            }
         }
+
+        throw new \RuntimeException(sprintf('Schema with namespace `%s` not found!', $ns));
     }
 
     public function findSchemaByLocation(string $location): Schema
     {
-        try {
-            return $this->takeFirst($this->schemas, function(Schema $schema) use($location) {
-                return $schema->getLocation() === $location;
-            });
-        } catch(\RuntimeException $e) {
-            throw new \RuntimeException(sprintf('Schema with location `%s` not found!', $location));
+        foreach($this->schemas as $schema) {
+            if($schema->getLocation() === $location) {
+                return $schema;
+            }
         }
+
+        throw new \RuntimeException(sprintf('Schema with location `%s` not found!', $location));
     }
 
     public function findUrisFor(Schema $schema): array
@@ -87,16 +87,5 @@ final class SchemaContainer
                 $this->findUrisForInner($this->findSchemaByNs($import), $namespaces);
             }
         }
-    }
-
-    private function takeFirst(array $collection, callable $filter)
-    {
-        foreach($collection as $item) {
-            if($filter($item)) {
-                return $item;
-            }
-        }
-
-        throw new \RuntimeException('Failed to find desired element in the collection!');
     }
 }

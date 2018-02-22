@@ -534,21 +534,12 @@ final class XsdAnalyzer
 
     private function prepareXmlName(\DOMNode $node)
     {
-        return $this->option($node, [
-            \DOMDocument::class => function(\DOMDocument $node) { return $node->nodeName; },
-            \DOMComment::class => function(\DOMComment $node) { return $node->nodeName; },
-            \DOMText::class => function(\DOMText $node) { return $node->nodeName; },
-            \DOMElement::class => function(\DOMElement $node) { return sprintf('{%s}%s', $node->namespaceURI, $node->localName); }
-        ]);
-    }
+        if($node instanceof \DOMElement) { return sprintf('{%s}%s', $node->namespaceURI, $node->localName); }
+        if($node instanceof \DOMDocument) { return $node->nodeName; }
+        if($node instanceof \DOMComment) { return $node->nodeName; }
+        if($node instanceof \DOMText) { return $node->nodeName; }
 
-    private function option($value, array $handlers)
-    {
-        if(false === array_key_exists(get_class($value), $handlers)) {
-            throw new \RuntimeException(sprintf('Invalid %s type, expected one of %s!', get_class($value), json_encode(array_keys($handlers))));
-        }
-
-        return $handlers[get_class($value)]($value);
+        throw new \RuntimeException(sprintf('Unknown XML element `%s`.', get_class($node)));
     }
 
     private function log(int $level, string ...$message)

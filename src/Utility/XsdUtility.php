@@ -4,6 +4,7 @@ namespace Thunder\Xsdragon\Utility;
 
 use Thunder\Xsdragon\Counter\Counter;
 use Thunder\Xsdragon\Logger\LoggerInterface;
+use Thunder\Xsdragon\Logger\NullLogger;
 use Thunder\Xsdragon\Schema\Choice;
 use Thunder\Xsdragon\Schema\ComplexType;
 use Thunder\Xsdragon\Schema\Element;
@@ -179,6 +180,10 @@ EOF;
 
     public static function log(LoggerInterface $logger, int $level, string ...$message)
     {
+        if($logger instanceof NullLogger) {
+            return;
+        }
+
         $colors = [29, 33, 34, 32, 35, 36, 37];
         if(count($message) > count($colors)) {
             throw new \RuntimeException(sprintf('Failed to process log message, not enough colors %s, %s required!', count($colors), count($message)));

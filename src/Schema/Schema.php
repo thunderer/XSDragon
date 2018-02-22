@@ -129,20 +129,14 @@ final class Schema
 
     public function findTypeByName(string $name)
     {
-        foreach($this->elements as $element) {
-            if($element->getName() === $name) {
-                return $element;
-            }
+        if(isset($this->elements[$name])) {
+            return $this->elements[$name];
         }
-        foreach($this->complexTypes as $complexType) {
-            if($complexType->getName() === $name) {
-                return $complexType;
-            }
+        if(isset($this->complexTypes[$name])) {
+            return $this->complexTypes[$name];
         }
-        foreach($this->simpleTypes as $simpleType) {
-            if($simpleType->getName() === $name) {
-                return $simpleType;
-            }
+        if(isset($this->simpleTypes[$name])) {
+            return $this->simpleTypes[$name];
         }
 
         throw new \RuntimeException(sprintf('Failed to find type with name %s! XMLNS: %s', $name, $this->namespace));
@@ -150,15 +144,11 @@ final class Schema
 
     public function findElementTypeByName(string $name)
     {
-        foreach($this->complexTypes as $complexType) {
-            if($complexType->getName() === $name) {
-                return $complexType;
-            }
+        if(isset($this->complexTypes[$name])) {
+            return $this->complexTypes[$name];
         }
-        foreach($this->simpleTypes as $simpleType) {
-            if($simpleType->getName() === $name) {
-                return $simpleType;
-            }
+        if(isset($this->simpleTypes[$name])) {
+            return $this->simpleTypes[$name];
         }
 
         throw new \RuntimeException(sprintf('Failed to find Element type with name `%s`! XMLNS: `%s`', $name, $this->namespace));
