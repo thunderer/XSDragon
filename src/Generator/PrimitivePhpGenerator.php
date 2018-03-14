@@ -408,6 +408,9 @@ final class PrimitivePhpGenerator implements GeneratorInterface
             empty($res->getPatterns()) ? '' : 'if(!\preg_match(\'~'.implode('|', $res->getPatterns()).'~\', $'.$name.')) {
     throw new \InvalidArgumentException(sprintf(\'%s value `%s` not in enumeration %s!\', __CLASS__, $'.$name.', \'['.implode(', ', $res->getPatterns()).']\'));
 }',
+            null === $res->getTotalDigits() ? '' : 'if('.$res->getTotalDigits().' !== \preg_match_all(\'/[0-9]/\', (string) $'.$name.')) {
+    throw new \InvalidArgumentException(\'Invalid total number of digits!\');
+}',
         ]));
     }
 

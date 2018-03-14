@@ -389,6 +389,9 @@ final class ClassPhpGenerator implements GeneratorInterface
                     empty($res->getPatterns()) ? '' : 'if(!preg_match(\'~'.implode('|', $res->getPatterns()).'~\', $value)) {
             throw new \InvalidArgumentException(sprintf(\'%s value `%s` not in enumeration %s!\', __CLASS__, $value, \'['.implode(', ', $res->getPatterns()).']\'));
         }',
+                    empty($res->getTotalDigits()) ? '' : 'if('.$res->getTotalDigits().' !== preg_match_all(\'/[0-9]/\', $value)) {
+            throw new \InvalidArgumentException(\'Invalid total number of digits!\');
+        }',
                 ])))
         ];
 
