@@ -331,6 +331,7 @@ final class XsdAnalyzer
         $maxInclusive = null;
         $length = null;
         $fractionDigits = null;
+        $totalDigits = null;
 
         $nodeName = $this->prepareXmlName($node);
         /** @var \DOMElement $child */
@@ -347,6 +348,7 @@ final class XsdAnalyzer
                 case '{http://www.w3.org/2001/XMLSchema}maxInclusive': { $maxInclusive = (int)$child->getAttribute('value'); break; }
                 case '{http://www.w3.org/2001/XMLSchema}length': { $length = (int)$child->getAttribute('value'); break; }
                 case '{http://www.w3.org/2001/XMLSchema}fractionDigits': { $fractionDigits = (int)$child->getAttribute('value'); break; }
+                case '{http://www.w3.org/2001/XMLSchema}totalDigits': { $totalDigits = (int)$child->getAttribute('value'); break; }
                 default: { throw new \RuntimeException(sprintf('Unhandled restriction %s!', $childName)); }
             }
         }
@@ -354,7 +356,7 @@ final class XsdAnalyzer
         return new Restrictions($node->getAttribute('base'),
             $hasEnums ? $enumerations : null,
             $hasPatterns ? $patterns : null,
-            $length, $minLength, $maxLength, $minInclusive, $maxInclusive, $fractionDigits);
+            $length, $minLength, $maxLength, $minInclusive, $maxInclusive, $fractionDigits, $totalDigits);
     }
 
     private function annotation(\DOMElement $node): string

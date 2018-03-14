@@ -9,7 +9,7 @@ final class RestrictionsTest extends TestCase
 {
     public function testRestrictions()
     {
-        $restrictions = new Restrictions('base', ['enum'], ['pattern'], 1, 2, 3, 4, 5, 6);
+        $restrictions = new Restrictions('base', ['enum'], ['pattern'], 1, 2, 3, 4, 5, 6, 7);
 
         $this->assertSame('base', $restrictions->getBase());
         $this->assertSame(['enum'], $restrictions->getEnumerations());
@@ -20,6 +20,7 @@ final class RestrictionsTest extends TestCase
         $this->assertSame(4, $restrictions->getMinInclusive());
         $this->assertSame(5, $restrictions->getMaxInclusive());
         $this->assertSame(6, $restrictions->getFractionDigits());
+        $this->assertSame(7, $restrictions->getTotalDigits());
     }
 
     public function testExceptionWhenEmptyEnumerations()
@@ -68,5 +69,17 @@ final class RestrictionsTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         Restrictions::createFromFractionDigits('base', -1);
+    }
+
+    public function testExceptionWhenNegativeTotalDigits()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        Restrictions::createFromTotalDigits('base', -1);
+    }
+
+    public function testExceptionWhenTotalDigitsIsZero()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        Restrictions::createFromTotalDigits('base', 0);
     }
 }
